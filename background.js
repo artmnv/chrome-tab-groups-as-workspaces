@@ -58,13 +58,17 @@ function isWithoutGroup(tab) {
   return tab.groupId == null || tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE;
 }
 
-async function groupIndependentTabs() {
+async function getFloatingTabIds(windowId) {
+  const tabs = await chrome.tabs.query({ windowId });
+  return tabs.filter(tab => isGroupable(tab) && isWithoutGroup(tab)).map(t => t.id);
+}
+
+async function groupFloatingTabsToNew() {
   try {
     const windowId = await getCurrentWindowId();
     if (windowId == null) return;
 
-    const tabs = await chrome.tabs.query({ windowId });
-    const tabIds = tabs.filter(tab => isGroupable(tab) && isWithoutGroup(tab)).map(t => t.id);
+    const tabIds = await getFloatingTabIds(windowId);
     if (tabIds.length === 0) return;
 
     await chrome.tabs.group({
@@ -73,6 +77,24 @@ async function groupIndependentTabs() {
     });
   } catch (error) {
     console.error('groupIndependentTabs: failed to group tabs', error);
+  }
+}
+
+async function groupFloatingTabsTo(groupId) {
+  if (groupId == null) return;
+  try {
+    const windowId = await getCurrentWindowId();
+    if (windowId == null) return;
+
+    const group = await chrome.tabGroups.get(groupId);
+    if (windowId !== group.windowId) return;
+
+    const tabIds = await getFloatingTabIds(group.windowId);
+    if (tabIds.length === 0) return;
+
+    await chrome.tabs.group({ tabIds, groupId });
+  } catch (error) {
+    console.error('groupIndependentTabsTo: failed to group tabs', { groupId, error });
   }
 }
 
@@ -94,8 +116,9 @@ async function ungroupActiveGroup() {
 }
 
 const POPUP_ACTIONS = {
-  'group-tabs': groupIndependentTabs,
+  'group-tabs': groupFloatingTabsToNew,
   'ungroup-tabs': ungroupActiveGroup,
+  'group-tabs-to': message => groupFloatingTabsTo(message.groupId),
 };
 
 chrome.runtime.onMessage.addListener(message => {
@@ -103,7 +126,7 @@ chrome.runtime.onMessage.addListener(message => {
   const action = POPUP_ACTIONS[message.type];
   if (action == null) return;
 
-  action().catch(error => {
+  action(message).catch(error => {
     console.error('popup action failed', { type: message.type, error });
   });
 });

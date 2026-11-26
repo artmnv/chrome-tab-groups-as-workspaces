@@ -11,10 +11,29 @@
       font: 13px/1.5 system-ui, sans-serif;
       color: #202124;
     }
-    .buttons {
+    .buttons,
+    .groups {
       display: flex;
       flex-direction: column;
       gap: 8px;
+    }
+    .groups {
+      gap: 4px;
+      margin-top: 8px;
+    }
+    .groups[hidden] {
+      display: none;
+    }
+    .groups-title {
+      margin: 0 0 2px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #5f6368;
+    }
+    .group-empty {
+      margin: 0;
+      font-size: 12px;
+      color: #5f6368;
     }
     button {
       padding: 8px 12px;
@@ -38,13 +57,33 @@
       border-color: #d93025;
       color: #fff;
     }
+    .group-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+    }
+    .group-button .swatch {
+      flex: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .group-button .title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
   <div class="buttons">
     <button id="group" class="primary" type="button">Group</button>
     <button id="ungroup" class="danger" type="button">Ungroup</button>
+    <button id="group-to" type="button">Group To…</button>
   </div>
+
+  <div id="groups" class="groups" hidden></div>
 
   <script src="popup.js"></script>
 </body>
