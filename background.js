@@ -40,6 +40,74 @@ async function addTabToGroup(tabId, groupId) {
   }
 }
 
+async function getCurrentWindowId() {
+  try {
+    const win = await chrome.windows.getLastFocused();
+    return win != null && win.id != null ? win.id : null;
+  } catch (error) {
+    console.error('getCurrentWindowId: failed to get last focused window', error);
+    return null;
+  }
+}
+
+function isGroupable(tab) {
+  return tab.id != null && !tab.pinned;
+}
+
+function isWithoutGroup(tab) {
+  return tab.groupId == null || tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE;
+}
+
+async function groupIndependentTabs() {
+  try {
+    const windowId = await getCurrentWindowId();
+    if (windowId == null) return;
+
+    const tabs = await chrome.tabs.query({ windowId });
+    const tabIds = tabs.filter(tab => isGroupable(tab) && isWithoutGroup(tab)).map(t => t.id);
+    if (tabIds.length === 0) return;
+
+    await chrome.tabs.group({
+      tabIds,
+      createProperties: { windowId },
+    });
+  } catch (error) {
+    console.error('groupIndependentTabs: failed to group tabs', error);
+  }
+}
+
+async function ungroupActiveGroup() {
+  try {
+    const windowId = await getCurrentWindowId();
+    if (windowId == null) return;
+
+    const groupId = await getOnlyOpenGroupInWindow(windowId);
+    if (groupId == null) return;
+
+    const groupTabs = await chrome.tabs.query({ groupId });
+    const tabIds = groupTabs.map(t => t.id);
+
+    await chrome.tabs.ungroup(tabIds);
+  } catch (error) {
+    console.error('ungroupActiveGroup: failed to ungroup tabs', error);
+  }
+}
+
+const POPUP_ACTIONS = {
+  'group-tabs': groupIndependentTabs,
+  'ungroup-tabs': ungroupActiveGroup,
+};
+
+chrome.runtime.onMessage.addListener(message => {
+  if (message == null || typeof message !== 'object') return;
+  const action = POPUP_ACTIONS[message.type];
+  if (action == null) return;
+
+  action().catch(error => {
+    console.error('popup action failed', { type: message.type, error });
+  });
+});
+
 // Collapse other groups on group opening
 chrome.tabGroups.onUpdated.addListener(async group => {
   if (group.collapsed === false) {

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tab groups as Workspaces</title>
+  <style>
+    body {
+      min-width: 260px;
+      margin: 0;
+      padding: 12px;
+      font: 13px/1.5 system-ui, sans-serif;
+      color: #202124;
+    }
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    button {
+      padding: 8px 12px;
+      font: inherit;
+      text-align: center;
+      border-radius: 4px;
+      border: 1px solid #dadce0;
+      background: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      filter: brightness(0.95);
+    }
+    button.primary {
+      background: #1a73e8;
+      border-color: #1a73e8;
+      color: #fff;
+    }
+    button.danger {
+      background: #d93025;
+      border-color: #d93025;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="buttons">
+    <button id="group" class="primary" type="button">Group</button>
+    <button id="ungroup" class="danger" type="button">Ungroup</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
