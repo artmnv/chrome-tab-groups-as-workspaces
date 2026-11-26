@@ -14,7 +14,7 @@ A Chrome extension that simplifies tab group management by automatically collaps
 2. Open Chrome and navigate to chrome://extensions.
 3. Enable Developer mode in the top-right corner.
 4. Click Load unpacked.
-5. Select the extracted chrome_group_focus folder.
+5. Select the extracted folder.
 
 The extension will start working immediately after installation.
 
