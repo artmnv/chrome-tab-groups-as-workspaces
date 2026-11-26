@@ -2,7 +2,8 @@
   "manifest_version": 3,
   "name": "Tab Groups as Workspaces",
   "version": "0.1.0",
-  "description": "",
+  "description": "A Chrome extension that simplifies tab group management by automatically collapsing inactive groups and organizing newly opened tabs.",
+  "minimum_chrome_version": "89",
   "permissions": [
     "tabGroups"
   ],
