@@ -111,7 +111,10 @@ chrome.runtime.onMessage.addListener(message => {
 // Collapse other groups on group opening
 chrome.tabGroups.onUpdated.addListener(async group => {
   if (group.collapsed === false) {
+    await chrome.tabGroups.update(group.id, { color: 'blue' });
     await collapseOtherGroups(group.windowId, group.id);
+  } else if (group.targetColor !== 'grey') {
+    await chrome.tabGroups.update(group.id, { color: 'grey' });
   }
 });
 
