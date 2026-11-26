@@ -1,12 +1,21 @@
 async function safeGetGroups(windowId) {
-  try { return await chrome.tabGroups.query({ windowId }); } catch { return []; }
+  try {
+    return await chrome.tabGroups.query({ windowId });
+  } catch (error) {
+    console.error('safeGetGroups: failed to query tab groups', { windowId, error });
+    return [];
+  }
 }
 
 async function collapseOtherGroups(windowId, activeGroupId) {
   const groups = await safeGetGroups(windowId);
   await Promise.all(groups.map(async group => {
     if (group.id !== activeGroupId && !group.collapsed) {
-      try { await chrome.tabGroups.update(group.id, { collapsed: true }); } catch {}
+      try {
+        await chrome.tabGroups.update(group.id, { collapsed: true });
+      } catch (error) {
+        console.error('collapseOtherGroups: failed to collapse group', { groupId: group.id, windowId, error });
+      }
     }
   }));
 }
@@ -26,7 +35,9 @@ async function addTabToGroup(tabId, groupId) {
     if (tab.windowId === group.windowId && tab.groupId !== groupId) {
       await chrome.tabs.group({ tabIds: [tabId], groupId });
     }
-  } catch {}
+  } catch (error) {
+    console.error('addTabToGroup: failed to add tab to group', { tabId, groupId, error });
+  }
 }
 
 // Collapse other groups on group opening
